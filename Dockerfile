@@ -10,6 +10,9 @@ COPY requirements.txt ./
 # Обновляем pip
 RUN pip install --upgrade pip
 
+RUN apt-get update && apt-get install -y libgl1
+
+
 # Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
