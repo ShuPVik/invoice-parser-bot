@@ -39,7 +39,7 @@ async def process_image(user_id, image_id, bot):
 
                     # Создаем объект BufferedInputFile для корректного использования в aiogram
                     input_file = BufferedInputFile(image_buffer.getvalue(), filename='thumbnail.jpg')
-
+                    logger.info(f"Отправляем ответ на сообщение: {image_data['message_id']}")
                     # Отправка уменьшенной копии изображения
                     sent_message = await bot.send_photo(
                             user_id,
@@ -54,10 +54,8 @@ async def process_image(user_id, image_id, bot):
                                 ]
                             )
                         )
-                    #image_data['new_message_id'] = sent_message.message_id
                     # Сохраняем как message_id, так и caption для редактирования позже
                     images[image_id]['new_message_id']=sent_message.message_id
-                    image_data['caption'] = sent_message.caption  # Сохраняем caption
                     logger.info(f"Отправлено сообщение пользователю {user_id} с выбором действий.")
                     logger.info(f"Отправлено сообщение c message_id: {image_data['message_id']}.")
                 except Exception as e:

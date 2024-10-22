@@ -75,7 +75,8 @@ async def handle_image(message, user_id, is_document, bot):
                 "user_id": user_id,
                 "new_message_id": None
             }
-            logger.info(f"Изображение сохранено: {image_id} для пользователя {user_id} с накладной {invoice}.")
+
+            logger.info(f"Изображение сохранено: {image_id} для пользователя {user_id} с накладной {invoice} с message_id: {images[image_id]['message_id']}.")
             await process_image(user_id, image_id, bot)
 
     except Exception as e:
