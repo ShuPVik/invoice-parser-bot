@@ -1,0 +1,9 @@
+
+services:
+  bot:
+    build: .
+    volumes:
+      - .:/app  # Монтируем текущую директорию в контейнер
+    environment:
+      - TG_API_TOKEN=${TG_API_TOKEN}  # Устанавливаем переменные окружения
+    restart: unless-stopped
