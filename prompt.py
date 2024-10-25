@@ -22,7 +22,7 @@ prompt="""
             },
             "example02": {
                 "number": "Номер накладной отсутствует",
-                "error": true
+                "error": false
             },
             "example03": {
                 "number": "1218522",
