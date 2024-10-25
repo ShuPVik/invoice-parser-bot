@@ -114,6 +114,7 @@ async def get_number_using_openai(cv_image):
                     break
             else:
                 logger.warning("Не удалось сделать текст читаемым после трех поворотов.")
+        correct_skew(cv_image)
         base64_image = convert_image_to_base64(cv_image)
         logger.debug("Изображение перекодировано обратно в base64 для отправки в OpenAI.")
         invoice_data = await get_invoice_from_image(base64_image)
