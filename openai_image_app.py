@@ -10,7 +10,8 @@ from utils import convert_image_to_base64
 from prompt import prompt
 import logging
 import imutils  # Импортируем imutils
-from PIL import Image, ImageEnhance
+from PIL import ImageEnhance
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +19,17 @@ load_dotenv()
 
 def enhance_image(image):
     logger.debug("Начало улучшения изображения.")
+    
     # Увеличиваем контраст, не меняя цвет
     enhancer = ImageEnhance.Contrast(image)
     enhanced_image = enhancer.enhance(1.5)  # Значение > 1 увеличивает контраст
+    
     logger.info("Улучшенное изображение подготовлено для распознавания.")
-    return enhanced_image
+    
+    # Конвертируем PIL Image в cv2 формат
+    open_cv_image = cv2.cvtColor(np.array(enhanced_image), cv2.COLOR_RGB2BGR)
+    
+    return open_cv_image
 
 # Проверка ориентации текста на русском языке
 def check_text_orientation(image):
@@ -80,9 +87,9 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 client = AsyncOpenAI()
 
 # Основная функция для обработки изображения и получения номера накладной
-async def get_number_using_openai(cv_image):
+async def get_number_using_openai(pil_image):
     try:
-        cv_image=enhance_image(cv_image)
+        cv_image=enhance_image(pil_image)
         logger.info("Начало обработки изображения для извлечения номера накладной.")
         
         # Проверяем оригинальное изображение

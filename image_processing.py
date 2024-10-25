@@ -50,7 +50,7 @@ async def handle_image(message, user_id, is_document, bot):
         invoice = get_QR(cv_image)
 
         if invoice is None:
-            invoice_data = await get_number_using_openai(cv_image)
+            invoice_data = await get_number_using_openai(pil_image)
             invoice = invoice_data['number']
             error = invoice_data['error']
 
