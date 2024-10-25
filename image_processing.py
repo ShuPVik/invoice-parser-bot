@@ -46,9 +46,11 @@ async def handle_image(message, user_id, is_document, bot):
 
         base64_image = convert_image_to_base64(cv_image)
         invoice = get_QR(cv_image)
-
+        logger.error(f"Извлекли номер из QR: {invoice}.")
         if invoice is None:
+
             invoice_data = await get_number_using_openai(cv_image)
+            logger.error(f"Получили номер через openAI: {invoice_data}.")
             invoice = invoice_data['number']
             error = invoice_data['error']
 
