@@ -10,33 +10,26 @@ from utils import convert_image_to_base64
 from prompt import prompt
 import logging
 import imutils  # Импортируем imutils
+from PIL import Image, ImageEnhance
 
 logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# Улучшение изображения для OCR
 def enhance_image(image):
-    # Преобразование в оттенки серого
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    # Увеличение контрастности
-    gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=0)
-    
-    # Бинаризация (пороговое значение)
-    _, binary = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    
-    # Устранение шума
-    binary = cv2.medianBlur(binary, 3)
-    
-    return binary
+    logger.debug("Начало улучшения изображения.")
+    # Увеличиваем контраст, не меняя цвет
+    enhancer = ImageEnhance.Contrast(image)
+    enhanced_image = enhancer.enhance(1.5)  # Значение > 1 увеличивает контраст
+    logger.info("Улучшенное изображение подготовлено для распознавания.")
+    return enhanced_image
 
 # Проверка ориентации текста на русском языке
 def check_text_orientation(image):
     logger.info("Начало проверки ориентации текста.")
     #enhanced_image_result = enhance_image(image)
 
-    logger.info("Улучшенное изображение подготовлено для распознавания.")
+    #logger.info("Улучшенное изображение подготовлено для распознавания.")
     
     psm_modes = [1, 3, 4]
     text_results = []
@@ -45,7 +38,7 @@ def check_text_orientation(image):
         custom_config = f'--oem 3 --psm {psm} -l rus'
         text = pytesseract.image_to_string(image, config=custom_config)
         text_results.append((text, len(text)))
-        logger.info(f"Извлеченный текст (PSM {psm}): '{text}' (длина: {len(text)})")
+        #logger.info(f"Извлеченный текст (PSM {psm}): '{text}' (длина: {len(text)})")
 
     best_text = max(text_results, key=lambda x: x[1])
     logger.info(f"Извлеченный текст: {best_text[0]}")
@@ -89,6 +82,7 @@ client = AsyncOpenAI()
 # Основная функция для обработки изображения и получения номера накладной
 async def get_number_using_openai(cv_image):
     try:
+        cv_image=enhance_image(cv_image)
         logger.info("Начало обработки изображения для извлечения номера накладной.")
         
         # Проверяем оригинальное изображение
