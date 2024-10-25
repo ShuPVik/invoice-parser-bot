@@ -53,7 +53,7 @@ def check_text_orientation(image):
     corrected_image = correct_skew(image)  # Исправляем наклон изображения перед проверкой текста
     gray = cv2.cvtColor(corrected_image, cv2.COLOR_BGR2GRAY)
     text = pytesseract.image_to_string(gray)
-    logger.debug(f"Извлеченный текст: {text}")
+    logger.info(f"Извлеченный текст: {text}")
     result = len(text) > 10
     logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {len(text)}).")
     return result
@@ -114,7 +114,7 @@ async def get_number_using_openai(cv_image):
                     break
             else:
                 logger.warning("Не удалось сделать текст читаемым после трех поворотов.")
-        correct_skew(cv_image)
+        #correct_skew(cv_image)
         base64_image = convert_image_to_base64(cv_image)
         logger.debug("Изображение перекодировано обратно в base64 для отправки в OpenAI.")
         invoice_data = await get_invoice_from_image(base64_image)
