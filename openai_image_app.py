@@ -45,7 +45,7 @@ def check_text_orientation(image):
         custom_config = f'--oem 3 --psm {psm} -l rus'
         text = pytesseract.image_to_string(image, config=custom_config)
         text_results.append((text, len(text)))
-        #logger.info(f"Извлеченный текст (PSM {psm}): '{text}' (длина: {len(text)})")
+        logger.info(f"Извлеченный текст (PSM {psm}): '{text}' (длина: {len(text)})")
 
     best_text = max(text_results, key=lambda x: x[1])
     logger.info(f"Извлеченный текст: {best_text[0]}")
