@@ -86,8 +86,7 @@ async def get_invoice_from_image(base64_image):
                         },
                     },
                 ],
-            }],
-            max_tokens=30
+            }]
         )
         content = response.choices[0].message.content
         logger.info(f"Успешно извлечен номер накладной: {content}")
