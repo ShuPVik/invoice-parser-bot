@@ -3,50 +3,17 @@ import os
 import openai 
 from openai import AsyncOpenAI
 import cv2
-import numpy as np
-import logging
-import imutils
-from utils import convert_image_to_base64
-from prompt import prompt
+import pytesseract
 import json
 import requests
+from utils import convert_image_to_base64
+from prompt import prompt
+import logging
+import imutils  # Импортируем imutils
 
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-
-# Определение угла наклона изображения
-def get_skew_angle(image):
-    logger.debug("Определение угла наклона изображения.")
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = cv2.bitwise_not(gray)
-
-    coords = np.column_stack(np.where(gray > 0))
-    angle = cv2.minAreaRect(coords)[-1]
-
-    if angle < -45:
-        angle = -(90 + angle)
-    else:
-        angle = -angle
-
-    logger.debug(f"Обнаружен угол наклона: {angle} градусов.")
-    return angle
-
-# Исправление наклона изображения
-def correct_skew(image):
-    angle = get_skew_angle(image)
-    
-    if angle != 0:
-        logger.info(f"Корректируем наклон изображения на {angle} градусов.")
-        (h, w) = image.shape[:2]
-        center = (w // 2, h // 2)
-        M = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-        logger.info("Наклон изображения исправлен.")
-        return rotated
-    
-    logger.info("Изображение уже выровнено.")
-    return image
 
 # Улучшение изображения для OCR
 def enhance_image(image):
@@ -59,25 +26,22 @@ def enhance_image(image):
     logger.debug("Изображение улучшено.")
     return morphed
 
-# Основная функция для обработки изображения и получения номера накладной
-async def get_number_using_openai(cv_image):
-    try:
-        logger.info("Начало обработки изображения для извлечения номера накладной.")
-        corrected_image = correct_skew(cv_image)
-        
-        # Преобразуем изображение обратно в base64
-        base64_image = convert_image_to_base64(corrected_image)
-        logger.debug("Изображение перекодировано в base64 для отправки в OpenAI.")
-        
-        invoice_data = await get_invoice_from_image(base64_image)
-        logger.info("Номер накладной успешно извлечен.")
-        return json.loads(invoice_data)
+# Проверка ориентации текста на русском языке
+def check_text_orientation(image):
+    logger.debug("Начало проверки ориентации текста.")
+    enhanced_image_result = enhance_image(image)
+    
+    # Используем русский язык для распознавания текста
+    custom_config = r'--oem 3 --psm 6 -l rus'  # PSM 6 = Single Block of Text, '-l rus' для русского языка
+    text = pytesseract.image_to_string(enhanced_image_result, config=custom_config)
+    
+    logger.info(f"Извлеченный текст: {text}")
+    result = len(text) > 10
+    logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {len(text)}).")
+    
+    return result
 
-    except requests.RequestException as e:
-        logger.error(f"Ошибка сети при запросе: {e}")
-        return {"error": str(e)}
-
-# Извлечение номера накладной с помощью OpenAI
+# Извлечение номера накладной с помощью openai
 async def get_invoice_from_image(base64_image):
     try:
         logger.info("Начало запроса к OpenAI для извлечения номера накладной.")
@@ -106,3 +70,39 @@ async def get_invoice_from_image(base64_image):
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 client = AsyncOpenAI()
+
+# Основная функция для обработки изображения и получения номера накладной
+async def get_number_using_openai(cv_image):
+    try:
+        logger.info("Начало обработки изображения для извлечения номера накладной.")
+        
+        # Проверяем оригинальное изображение
+        is_readable = check_text_orientation(cv_image)
+        
+        # Если текст не читаем, пробуем повороты
+        if not is_readable:
+            for attempt in range(4):  # Проверяем 4 попытки: 0, 90, 180, 270 градусов
+                if attempt > 0:
+                    cv_image = imutils.rotate(cv_image, 90)  # Поворачиваем на 90 градусов
+                is_readable = check_text_orientation(cv_image)
+                if is_readable:
+                    logger.info(f"Текст стал читаемым после поворота (попытка {attempt}).")
+                    break
+            else:
+                logger.warning("Не удалось сделать текст читаемым после четырех поворотов.")
+        
+        # Преобразуем изображение обратно в base64
+        base64_image = convert_image_to_base64(cv_image)
+        logger.debug("Изображение перекодировано в base64 для отправки в OpenAI.")
+        
+        invoice_data = await get_invoice_from_image(base64_image)
+        logger.info("Номер накладной успешно извлечен.")
+        return json.loads(invoice_data)
+
+    except requests.RequestException as e:
+        logger.error(f"Ошибка сети при запросе: {e}")
+        return {"error": str(e)}
+
+    except Exception as e:
+        logger.error(f"Ошибка: {e}")
+        return {"error": str(e)}
