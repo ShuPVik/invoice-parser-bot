@@ -34,7 +34,7 @@ def enhance_image(image):
 # Проверка ориентации текста на русском языке
 def check_text_orientation(image):
     logger.info("Начало проверки ориентации текста.")
-    enhanced_image_result = enhance_image(image)
+    #enhanced_image_result = enhance_image(image)
 
     logger.info("Улучшенное изображение подготовлено для распознавания.")
     
@@ -43,7 +43,7 @@ def check_text_orientation(image):
     
     for psm in psm_modes:
         custom_config = f'--oem 3 --psm {psm} -l rus'
-        text = pytesseract.image_to_string(enhanced_image_result, config=custom_config)
+        text = pytesseract.image_to_string(image, config=custom_config)
         text_results.append((text, len(text)))
         logger.info(f"Извлеченный текст (PSM {psm}): '{text}' (длина: {len(text)})")
 
