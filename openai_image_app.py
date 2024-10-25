@@ -22,7 +22,7 @@ def enhance_image(image):
     
     # Увеличиваем контраст, не меняя цвет
     enhancer = ImageEnhance.Contrast(image)
-    enhanced_image = enhancer.enhance(1.5)  # Значение > 1 увеличивает контраст
+    enhanced_image = enhancer.enhance(2)  # Значение > 1 увеличивает контраст
     
     logger.info("Улучшенное изображение подготовлено для распознавания.")
     
