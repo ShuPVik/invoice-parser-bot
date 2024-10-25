@@ -7,7 +7,7 @@ import pytesseract
 import json
 import requests
 from utils import convert_image_to_base64
-from prompt import prompt
+from prompt import prompt, keywords
 import logging
 import imutils  # Импортируем imutils
 from PIL import ImageEnhance
@@ -56,8 +56,9 @@ def check_text_orientation(image):
     custom_config = '--oem 3 --psm 6 -l rus'  # Либо 11, в зависимости от ваших нужд
     text = pytesseract.image_to_string(image, config=custom_config)
     logger.info(f"Извлеченнный текст: {text}")
-    keyword='Кинетика'
-    if keyword in text:
+    
+    # Проверка наличия ключевых слов (без учета регистра)
+    if any(keyword in text.lower() for keyword in keywords):
         result=True
     else:
         result = False
