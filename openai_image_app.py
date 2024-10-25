@@ -55,13 +55,14 @@ def enhance_image(image):
     logger.debug("Изображение улучшено.")
     return morphed
 
-# Проверка ориентации текста
+# Проверка ориентации текста на русском языке
 def check_text_orientation(image):
     logger.debug("Начало проверки ориентации текста.")
     corrected_image = correct_skew(image)
     enhanced_image_result = enhance_image(corrected_image)
     
-    custom_config = r'--oem 3 --psm 6'
+    # Используем русский язык для распознавания текста
+    custom_config = r'--oem 3 --psm 6 -l rus'  # PSM 6 = Single Block of Text, '-l rus' для русского языка
     text = pytesseract.image_to_string(enhanced_image_result, config=custom_config)
     
     logger.info(f"Извлеченный текст: {text}")
