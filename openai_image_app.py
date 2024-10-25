@@ -31,15 +31,23 @@ def check_text_orientation(image):
     logger.debug("Начало проверки ориентации текста.")
     enhanced_image_result = enhance_image(image)
     
-    # Используем русский язык для распознавания текста
-    custom_config = r'--oem 3 --psm 6 -l rus'  # PSM 6 = Single Block of Text, '-l rus' для русского языка
-    text = pytesseract.image_to_string(enhanced_image_result, config=custom_config)
+    # Попробуем разные PSM для разбросанного текста
+    psm_modes = [1, 3, 4]  # Разные режимы сегментации страницы
+    text_results = []
     
-    logger.info(f"Извлеченный текст: {text}")
-    result = len(text) > 10
-    logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {len(text)}).")
+    for psm in psm_modes:
+        custom_config = f'--oem 3 --psm {psm} -l rus'  # Русский и английский
+        text = pytesseract.image_to_string(enhanced_image_result, config=custom_config)
+        text_results.append((text, len(text)))
+
+    # Логика для нахождения наилучшего текста
+    best_text = max(text_results, key=lambda x: x[1])  # Получаем текст с максимальным количеством символов
+    logger.info(f"Извлеченный текст: {best_text[0]}")
+    result = best_text[1] > 10
+    logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {best_text[1]}).")
     
     return result
+
 
 # Извлечение номера накладной с помощью openai
 async def get_invoice_from_image(base64_image):
