@@ -37,7 +37,7 @@ def check_text_orientation(image):
     #enhanced_image_result = enhance_image(image)
 
     #logger.info("Улучшенное изображение подготовлено для распознавания.")
-    
+    """
     psm_modes = [1, 3, 4]
     text_results = []
     
@@ -49,8 +49,15 @@ def check_text_orientation(image):
 
     best_text = max(text_results, key=lambda x: x[1])
     logger.info(f"Извлеченный текст: {best_text[0]}")
+    
     result = best_text[1] > 10
-    logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {best_text[1]}).")
+    """
+
+    custom_config = '--oem 3 --psm 6 -l rus'  # Либо 11, в зависимости от ваших нужд
+    text = pytesseract.image_to_string(image, config=custom_config)
+    logger.info(f"Извлеченнный текст: {text}")
+    result = len(text) > 10
+    logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {len(text)}).")
 
     return result
 
@@ -75,6 +82,7 @@ async def get_invoice_from_image(base64_image):
                 ],
             }],
             max_tokens=300,
+            temperature=0.4
         )
         content = response.choices[0].message.content
         logger.info(f"Успешно извлечен номер накладной: {content}")
