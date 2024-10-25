@@ -87,7 +87,8 @@ async def get_invoice_from_image(base64_image):
                     },
                 ],
             }],
-            max_tokens=30
+            max_tokens=30,
+            temperature=0.8
         )
         content = response.choices[0].message.content
         logger.info(f"Успешно извлечен номер накладной: {content}")
@@ -106,19 +107,19 @@ async def get_number_using_openai(pil_image):
         logger.info("Начало обработки изображения для извлечения номера накладной.")
         
         # Проверяем оригинальное изображение
-        is_readable = check_text_orientation(cv_image)
+        #is_readable = check_text_orientation(cv_image)
         
         # Если текст не читаем, пробуем повороты
-        if not is_readable:
-            for attempt in range(4):  # Проверяем 4 попытки: 0, 90, 180, 270 градусов
-                if attempt > 0:
-                    cv_image = imutils.rotate(cv_image, 90)  # Поворачиваем на 90 градусов
-                is_readable = check_text_orientation(cv_image)
-                if is_readable:
-                    logger.info(f"Текст стал читаемым после поворота (попытка {attempt}).")
-                    break
-            else:
-                logger.warning("Не удалось сделать текст читаемым после четырех поворотов.")
+        #if not is_readable:
+        for attempt in range(4):  # Проверяем 4 попытки: 0, 90, 180, 270 градусов
+            if attempt > 0:
+                cv_image = imutils.rotate(cv_image, 90)  # Поворачиваем на 90 градусов
+            is_readable = check_text_orientation(cv_image)
+            if is_readable:
+                logger.info(f"Текст стал читаемым после поворота (попытка {attempt}).")
+                break
+        else:
+            logger.warning("Не удалось сделать текст читаемым после четырех поворотов.")
         
         # Преобразуем изображение обратно в base64
         base64_image = convert_image_to_base64(cv_image)
