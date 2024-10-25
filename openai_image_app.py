@@ -22,7 +22,7 @@ def enhance_image(image):
     
     # Увеличиваем контраст, не меняя цвет
     enhancer = ImageEnhance.Contrast(image)
-    enhanced_image = enhancer.enhance(1.2)  # Значение > 1 увеличивает контраст
+    enhanced_image = enhancer.enhance(1.)  # Значение > 1 увеличивает контраст
     
     logger.info("Улучшенное изображение подготовлено для распознавания.")
     
@@ -87,8 +87,7 @@ async def get_invoice_from_image(base64_image):
                     },
                 ],
             }],
-            max_tokens=30,
-            temperature=0.8
+            max_tokens=30
         )
         content = response.choices[0].message.content
         logger.info(f"Успешно извлечен номер накладной: {content}")
