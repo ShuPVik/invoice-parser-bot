@@ -56,7 +56,12 @@ def check_text_orientation(image):
     custom_config = '--oem 3 --psm 6 -l rus'  # Либо 11, в зависимости от ваших нужд
     text = pytesseract.image_to_string(image, config=custom_config)
     logger.info(f"Извлеченнный текст: {text}")
-    result = len(text) > 10
+    keyword='Кинетика'
+    if keyword in text:
+        result=True
+    else:
+        result = False
+    #result = len(text) > 10
     logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {len(text)}).")
 
     return result
