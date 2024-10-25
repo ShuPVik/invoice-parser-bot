@@ -47,18 +47,43 @@ def correct_skew(image):
     logger.info("Наклон изображения исправлен.")
     return rotated
 
-# Обновляем функцию проверки ориентации текста
+def enhance_image(image):
+    logger.debug("Улучшение изображения для улучшения распознавания.")
+    # Преобразуем в градации серого
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Применяем размытие по Гауссу для удаления шума
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    
+    # Применяем бинаризацию для усиления контраста
+    _, binary_image = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    # Применяем морфологические операции для улучшения текста
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    morphed = cv2.morphologyEx(binary_image, cv2.MORPH_CLOSE, kernel)
+    
+    logger.debug("Изображение улучшено.")
+    return morphed
+
+# Обновленная функция проверки ориентации текста
 def check_text_orientation(image):
-    logger.debug("Преобразование изображения в градации серого для проверки ориентации текста.")
-    corrected_image = correct_skew(image)  # Исправляем наклон изображения перед проверкой текста
-    gray = cv2.cvtColor(corrected_image, cv2.COLOR_BGR2GRAY)
-    text = pytesseract.image_to_string(gray)
+    logger.debug("Начало проверки ориентации текста.")
+    
+    # Исправляем наклон изображения
+    corrected_image = correct_skew(image)
+    
+    # Улучшаем изображение
+    enhanced_image_result = enhance_image(corrected_image)
+    
+    # Распознаем текст с помощью Tesseract с параметрами
+    custom_config = r'--oem 3 --psm 6'  # OEM 3 = LSTM и Tesseract, PSM 6 = Single Block of Text
+    text = pytesseract.image_to_string(enhanced_image_result, config=custom_config)
+    
     logger.info(f"Извлеченный текст: {text}")
     result = len(text) > 10
     logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {len(text)}).")
+    
     return result
-
-
 
 # Поворот изображения на 90 градусов
 def rotate_image_90_degrees(image, clockwise=False):
@@ -68,6 +93,7 @@ def rotate_image_90_degrees(image, clockwise=False):
         return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
     else:
         return cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
 
 # Извлечение номера накладной с помощью openai
 async def get_invoice_from_image(base64_image):
