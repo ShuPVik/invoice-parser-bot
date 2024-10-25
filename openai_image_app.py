@@ -20,15 +20,45 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# Проверка ориентации изображения
+def correct_skew(image):
+    logger.debug("Попытка исправить наклон изображения.")
+    # Преобразуем изображение в градации серого
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.bitwise_not(gray)
+
+    # Определение координат текста и получение минимального ограничивающего угла
+    coords = np.column_stack(np.where(gray > 0))
+    angle = cv2.minAreaRect(coords)[-1]
+
+    # Исправление угла
+    if angle < -45:
+        angle = -(90 + angle)
+    else:
+        angle = -angle
+
+    logger.debug(f"Обнаружен угол поворота: {angle} градусов.")
+
+    # Поворот изображения для выравнивания текста
+    (h, w) = image.shape[:2]
+    center = (w // 2, h // 2)
+    M = cv2.getRotationMatrix2D(center, angle, 1.0)
+    rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+
+    logger.info("Наклон изображения исправлен.")
+    return rotated
+
+# Обновляем функцию проверки ориентации текста
 def check_text_orientation(image):
     logger.debug("Преобразование изображения в градации серого для проверки ориентации текста.")
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    corrected_image = correct_skew(image)  # Исправляем наклон изображения перед проверкой текста
+    gray = cv2.cvtColor(corrected_image, cv2.COLOR_BGR2GRAY)
     text = pytesseract.image_to_string(gray)
     logger.debug(f"Извлеченный текст: {text}")
     result = len(text) > 10
     logger.info(f"Ориентация текста {'правильная' if result else 'неправильная'} (количество символов: {len(text)}).")
     return result
+
+
 
 # Поворот изображения на 90 градусов
 def rotate_image_90_degrees(image, clockwise=False):
@@ -72,23 +102,10 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 client = AsyncOpenAI()
 
 # Асинхронная функция для обработки изображения и извлечения номера накладной
-async def get_number_using_openai(base64_image):
+async def get_number_using_openai(cv_image):
     try:
         logger.info("Начало обработки изображения для извлечения номера накладной.")
-        image_data = base64.b64decode(base64_image)
-        logger.debug("Изображение успешно декодировано из base64.")
-        
         try:
-            logger.debug("Создание потока для работы с изображением.")
-            image_stream = io.BytesIO(image_data)
-            pil_image = Image.open(image_stream)
-            logger.info("Изображение загружено в PIL.")
-            
-            pil_image = pil_image.convert("RGB")
-            logger.debug("Изображение сконвертировано в формат RGB.")
-            cv_image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-            logger.info("Изображение преобразовано в формат OpenCV для дальнейшей обработки.")
-
             if not check_text_orientation(cv_image):
                 logger.info("Текст не читается. Поворот изображения.")
                 for attempt in range(3):
@@ -98,7 +115,6 @@ async def get_number_using_openai(base64_image):
                         break
                 else:
                     logger.warning("Не удалось сделать текст читаемым после трех поворотов.")
-
             base64_image = convert_image_to_base64(cv_image)
             logger.debug("Изображение перекодировано обратно в base64 для отправки в OpenAI.")
             
