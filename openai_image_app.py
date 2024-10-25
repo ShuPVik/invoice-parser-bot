@@ -17,14 +17,19 @@ load_dotenv()
 
 # Улучшение изображения для OCR
 def enhance_image(image):
-    logger.debug("Улучшение изображения для улучшения распознавания.")
+    # Преобразование в оттенки серого
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, binary_image = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    morphed = cv2.morphologyEx(binary_image, cv2.MORPH_CLOSE, kernel)
-    logger.debug("Изображение улучшено.")
-    return morphed
+    
+    # Увеличение контрастности
+    gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=0)
+    
+    # Бинаризация (пороговое значение)
+    _, binary = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    # Устранение шума
+    binary = cv2.medianBlur(binary, 3)
+    
+    return binary
 
 # Проверка ориентации текста на русском языке
 def check_text_orientation(image):
@@ -32,11 +37,11 @@ def check_text_orientation(image):
     enhanced_image_result = enhance_image(image)
     
     # Попробуем разные PSM для разбросанного текста
-    psm_modes = [1, 3, 4]  # Разные режимы сегментации страницы
+    psm_modes = [ 3, 4]  # Разные режимы сегментации страницы
     text_results = []
     
     for psm in psm_modes:
-        custom_config = f'--oem 3 --psm {psm} -l rus'  # Русский и английский
+        custom_config = f'--oem 3 --psm {psm} -l rus'  # Русский
         text = pytesseract.image_to_string(enhanced_image_result, config=custom_config)
         text_results.append((text, len(text)))
 
