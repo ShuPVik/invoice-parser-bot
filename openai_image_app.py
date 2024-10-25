@@ -22,7 +22,7 @@ def enhance_image(image):
     
     # Увеличиваем контраст, не меняя цвет
     enhancer = ImageEnhance.Contrast(image)
-    enhanced_image = enhancer.enhance(1.5)  # Значение > 1 увеличивает контраст
+    enhanced_image = enhancer.enhance(1.2)  # Значение > 1 увеличивает контраст
     
     logger.info("Улучшенное изображение подготовлено для распознавания.")
     
@@ -61,7 +61,7 @@ async def get_invoice_from_image(base64_image):
     try:
         logger.info("Начало запроса к OpenAI для извлечения номера накладной.")
         response = await client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[{
                 "role": "user",
                 "content": [
