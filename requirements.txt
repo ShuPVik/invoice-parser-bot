@@ -10,5 +10,3 @@ pytesseract
 requests
 openai
 pyzbar
-
-re
