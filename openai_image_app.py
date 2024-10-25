@@ -105,30 +105,23 @@ client = AsyncOpenAI()
 async def get_number_using_openai(cv_image):
     try:
         logger.info("Начало обработки изображения для извлечения номера накладной.")
-        try:
-            if not check_text_orientation(cv_image):
-                logger.info("Текст не читается. Поворот изображения.")
-                for attempt in range(3):
-                    cv_image = rotate_image_90_degrees(cv_image, clockwise=False)
-                    if check_text_orientation(cv_image):
-                        logger.info(f"Текст стал читаемым после поворота (попытка {attempt + 1}).")
-                        break
-                else:
-                    logger.warning("Не удалось сделать текст читаемым после трех поворотов.")
-            base64_image = convert_image_to_base64(cv_image)
-            logger.debug("Изображение перекодировано обратно в base64 для отправки в OpenAI.")
-            
-            invoice_data = await get_invoice_from_image(base64_image)
-            logger.info("Номер накладной успешно извлечен.")
-            return json.loads(invoice_data)
-        finally:
-            pil_image.close()
-            image_stream.close()
-            logger.debug("Поток и изображение закрыты.")
+        if not check_text_orientation(cv_image):
+            logger.info("Текст не читается. Поворот изображения.")
+            for attempt in range(3):
+                cv_image = rotate_image_90_degrees(cv_image, clockwise=False)
+                if check_text_orientation(cv_image):
+                    logger.info(f"Текст стал читаемым после поворота (попытка {attempt + 1}).")
+                    break
+            else:
+                logger.warning("Не удалось сделать текст читаемым после трех поворотов.")
+        base64_image = convert_image_to_base64(cv_image)
+        logger.debug("Изображение перекодировано обратно в base64 для отправки в OpenAI.")
+        invoice_data = await get_invoice_from_image(base64_image)
+        logger.info("Номер накладной успешно извлечен.")
+        return json.loads(invoice_data)
+
     except requests.RequestException as e:
         logger.error(f"Ошибка сети при запросе: {e}")
         return {"error": str(e)}
-    finally:
-        del image_data, image_stream, pil_image, cv_image
-        logger.debug("Очищены временные данные для освобождения памяти.")
+
     
