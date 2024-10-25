@@ -10,7 +10,11 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     zbar-tools \
     tesseract-ocr \
+    tesseract-ocr-rus \
     && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем переменную среды для Tesseract
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
 
 # Копируем файл с зависимостями в контейнер
 COPY requirements.txt ./
