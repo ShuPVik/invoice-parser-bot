@@ -25,11 +25,11 @@ def send_text_to_flask(message):
     }
 
     # Логируем подготовленные данные
-    logging.debug(f"Отправляем данные на {url_t}: {json.dumps(data, indent=2)}")
+    logging.debug(f"Отправляем данные на {url_t}")
 
     try:
         response = requests.post(url, json=data, headers=headers)
-        logging.debug(f"Ответ сервера: {response.status_code}, {response.text}")
+        logging.debug(f"Ответ сервера: {response.status_code}")
         logging.info(f"Ответ от Flask: {response.json()}")
     except Exception as e:
         logging.error(f"Ошибка отправки данных: {e}", exc_info=True)  # exc_info добавляет полный трейсбэк
