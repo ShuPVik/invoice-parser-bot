@@ -28,7 +28,7 @@ def send_text_to_flask(message):
     logging.debug(f"Отправляем данные на {url_t}")
 
     try:
-        response = requests.post(url, json=data, headers=headers)
+        response = requests.post(url_t, json=data, headers=headers)
         logging.debug(f"Ответ сервера: {response.status_code}")
         logging.info(f"Ответ от Flask: {response.json()}")
     except Exception as e:
@@ -56,7 +56,7 @@ def send_file_to_flask(file_content, file_name, message):
     }
 
     # Логируем подготовленные данные
-    logging.debug(f"Отправляем данные на {url}")
+    logging.debug(f"Отправляем данные на {url_f}")
 
     try:
         # Отправляем запрос
