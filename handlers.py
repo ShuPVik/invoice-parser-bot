@@ -26,7 +26,7 @@ async def handle_photo(message: types.Message, bot: Bot):
     # Берем самое большое изображение
     photo = message.photo[-1]
     # Получаем файл
-    file_info = bot.get_file(photo.file_id)
+    file_info = await bot.get_file(photo.file_id)
     # Получаем содержимое файла
     file_content = await bot.download_file(file_info.file_path)
     # Генерируем имя файла (например, используем file_id)
@@ -50,7 +50,7 @@ async def handle_document(message: types.Message, bot: Bot):
                 # Берем самое большое изображение
             photo = message.photo[-1]
             # Получаем файл
-            file_info = bot.get_file(photo.file_id)
+            file_info = await bot.get_file(photo.file_id)
             # Получаем содержимое файла
             file_content = await bot.download_file(file_info.file_path)
             # Генерируем имя файла (например, используем file_id)
