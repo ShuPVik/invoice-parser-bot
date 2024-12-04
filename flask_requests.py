@@ -18,7 +18,7 @@ def send_text_to_flask(message):
         'message': {
             'user_id': message.from_user.id,
             'chat_id': message.chat.id,
-            'timestamp': message.date,  # Отправляем как Unix-время (int)
+            'timestamp': int(message.date.timestamp()),  # Отправляем как Unix-время (int)
             'text': message.text,  # Само текстовое сообщение
             'content_type': message.content_type
         }
@@ -49,7 +49,7 @@ def send_file_to_flask(file_content, file_name, message):
         'message': {
             'user_id': message.from_user.id,
             'chat_id': message.chat.id,
-            'timestamp': message.date,  # Отправляем как Unix-время (int)
+            'timestamp': int(message.date.timestamp()),  # Отправляем как Unix-время (int)
             'caption': message.caption,  # Может быть None, если нет текста
             'content_type': message.content_type
         }
