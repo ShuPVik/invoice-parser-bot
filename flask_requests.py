@@ -30,7 +30,6 @@ def send_text_to_flask(message):
     try:
         response = requests.post(url_t, json=data, headers=headers)
         logging.debug(f"Ответ сервера: {response.status_code}")
-        logging.info(f"Ответ от Flask: {response.json()}")
     except Exception as e:
         logging.error(f"Ошибка отправки данных: {e}", exc_info=True)  # exc_info добавляет полный трейсбэк
 
@@ -64,6 +63,5 @@ def send_file_to_flask(file_content, file_name, message):
 
         # Логируем успешный ответ
         logging.debug(f"Ответ сервера: {response.status_code}, {response.text}")
-        logging.info(f"Ответ от Flask: {response.json()}")
     except Exception as e:
         logging.error(f"Ошибка отправки файла: {e}", exc_info=True)

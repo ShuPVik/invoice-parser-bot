@@ -32,8 +32,6 @@ async def handle_image(message, user_id, is_document, bot):
         file_extension = file_path.split('.')[-1]
         downloaded_file = await bot.download_file(file_path)
         image_stream = io.BytesIO(downloaded_file.getvalue())  # Получаем байтовые данные
-        file_name = f"{file_info.file_id}.jpg"
-        send_file_to_flask(downloaded_file, file_name, message)
         logger.info(f"Файл {file_path} загружен успешно.")
 
         # Открытие и обработка изображения

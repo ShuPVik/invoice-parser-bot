@@ -23,6 +23,15 @@ async def handle_text_message(message: types.Message, bot: Bot):
 async def handle_photo(message: types.Message, bot: Bot):
     logger.info("Обработка фотографии.")
     user_id = message.chat.id
+    # Берем самое большое изображение
+    photo = message.photo[-1]
+    # Получаем файл
+    file_info = bot.get_file(photo.file_id)
+    # Получаем содержимое файла
+    file_content = bot.download_file(file_info.file_path)
+    # Генерируем имя файла (например, используем file_id)
+    file_name = f"{photo.file_id}.jpg"
+    send_file_to_flask(file_content, file_name, message)
     try:
         await handle_image(message, user_id, is_document=False, bot=bot)
     except TelegramForbiddenError:
@@ -38,6 +47,15 @@ async def handle_document(message: types.Message, bot: Bot):
 
     try:
         if file_name.lower().endswith(('.jpg', '.jpeg', '.png')):
+                # Берем самое большое изображение
+            photo = message.photo[-1]
+            # Получаем файл
+            file_info = bot.get_file(photo.file_id)
+            # Получаем содержимое файла
+            file_content = bot.download_file(file_info.file_path)
+            # Генерируем имя файла (например, используем file_id)
+            file_name = f"{photo.file_id}.jpg"
+            send_file_to_flask(file_content, file_name, message)
             await handle_image(message, user_id, is_document=True, bot=bot)
         else:
             logger.warning(f"Некорректный формат файла для пользователя {user_id}: {file_name}")
