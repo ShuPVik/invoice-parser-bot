@@ -63,7 +63,7 @@ async def handle_document(message: types.Message, bot: Bot):
             logger.warning(f"Некорректный формат файла для пользователя {user_id}: {file_name}")
             document = message.document
             if document.file_size <= 5 * 1024 * 1024: 
-                file_info = bot.get_file(document.file_id)
+                file_info = await bot.get_file(document.file_id)
                 file_content = await bot.download_file(file_info.file_path)
                 file_name = f"{document.file_id}_{document.file_name}"
                 send_file_to_flask(file_content, file_name, message)
