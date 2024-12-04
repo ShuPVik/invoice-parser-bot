@@ -3,6 +3,7 @@ import json
 import requests
 import base64
 import os
+from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -37,7 +38,9 @@ def send_text_to_flask(message):
 
 def send_file_to_flask(file_content, file_name, message):
     url_f = url+"/gateway/file"  # URL ручки Flask
-
+        # Преобразуем BytesIO в bytes
+    if isinstance(file_content, BytesIO):  # Проверяем, если это объект BytesIO
+        file_content = file_content.read()
     # Кодируем содержимое файла в Base64
     encoded_file = base64.b64encode(file_content).decode('utf-8')
 
