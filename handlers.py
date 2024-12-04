@@ -14,7 +14,7 @@ router = Router()
 async def handle_text_message(message: types.Message, bot: Bot):
     logger.info(f"Обработка текстового сообщения от пользователя {message.chat.id}.")
     try:
-        await send_text_to_flask(message)  # Отправка текста в Flask
+        send_text_to_flask(message)  # Отправка текста в Flask
     except Exception as e:
         logger.error(f"Ошибка при обработке текстового сообщения: {e}")
 
@@ -40,7 +40,7 @@ async def handle_photo(message: types.Message, bot: Bot):
     except Exception as e:
         logger.error(f"Ошибка при обработке фотографии от пользователя {user_id}: {e}")
 
-        
+
 @router.message(F.content_type == 'document')
 async def handle_document(message: types.Message, bot: Bot):
     logger.info("Обработка документа.")
