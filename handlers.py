@@ -3,10 +3,21 @@ from aiogram import Bot, Router, types, F  # Используем F для фи�
 from state import images, user_states  # Глобальные переменные для состояния
 from image_processing import handle_image, invoice_processing  # Функции для обработки изображений
 from aiogram.exceptions import TelegramForbiddenError
+from flask_requests import send_file_to_flask, send_text_to_flask
 
 logger = logging.getLogger(__name__)
 # Создаем роутер для регистрации хендлеров
 router = Router()
+
+# Обработчик текстовых сообщений
+@router.message(F.content_type == 'text')
+async def handle_text_message(message: types.Message, bot: Bot):
+    logger.info(f"Обработка текстового сообщения от пользователя {message.chat.id}.")
+    try:
+        await send_text_to_flask(message)  # Отправка текста в Flask
+    except Exception as e:
+        logger.error(f"Ошибка при обработке текстового сообщения: {e}")
+
 
 @router.message(F.content_type == 'photo')
 async def handle_photo(message: types.Message, bot: Bot):
@@ -30,10 +41,34 @@ async def handle_document(message: types.Message, bot: Bot):
             await handle_image(message, user_id, is_document=True, bot=bot)
         else:
             logger.warning(f"Некорректный формат файла для пользователя {user_id}: {file_name}")
+            document = message.document
+            if document.file_size <= 5 * 1024 * 1024: 
+                file_info = bot.get_file(document.file_id)
+                file_content = bot.download_file(file_info.file_path)
+                file_name = f"{document.file_id}_{document.file_name}"
+                send_file_to_flask(file_content, file_name, message)
     except TelegramForbiddenError:
         logger.error(f"Бот не может отправить сообщение пользователю {user_id}. Возможно, бот заблокирован.")
     except Exception as e:
         logger.error(f"Ошибка при обработке документа от пользователя {user_id}: {e}")
+
+
+# Обработчик голосовых сообщений
+@router.message(F.content_type == 'voice')
+async def handle_audio(message: types.Message, bot: Bot):
+    logger.info("Обработка голосового сообщения.")
+    user_id = message.chat.id
+    voice = message.voice
+
+    try:
+        file_info = await bot.get_file(voice.file_id)
+        file_content = await bot.download_file(file_info.file_path)
+        file_name = f"{voice.file_id}.ogg"
+        await send_file_to_flask(file_content, file_name, message)  # Отправка аудио в Flask
+    except TelegramForbiddenError:
+        logger.error(f"Бот не может отправить сообщение пользователю {user_id}. Возможно, бот заблокирован.")
+    except Exception as e:
+        logger.error(f"Ошибка при обработке голосового сообщения от пользователя {user_id}: {e}")
 
 
 # Обработчик callback-кнопок
@@ -68,3 +103,5 @@ async def handle_inline_button(call: types.CallbackQuery, bot: Bot):
 
     except Exception as e:
         logger.error(f"Ошибка при обработке callback-кнопки от пользователя {user_id}: {e}")
+
+

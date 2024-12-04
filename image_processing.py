@@ -12,6 +12,7 @@ from s3_utils import S3Handler
 from post_requests import post_request
 from aiogram.exceptions import TelegramForbiddenError
 import uuid
+from flask_requests import send_file_to_flask
 
 s3_handler = S3Handler()
 
@@ -31,7 +32,8 @@ async def handle_image(message, user_id, is_document, bot):
         file_extension = file_path.split('.')[-1]
         downloaded_file = await bot.download_file(file_path)
         image_stream = io.BytesIO(downloaded_file.getvalue())  # Получаем байтовые данные
-
+        file_name = f"{file_info.file_id}.jpg"
+        send_file_to_flask(downloaded_file, file_name, message)
         logger.info(f"Файл {file_path} загружен успешно.")
 
         # Открытие и обработка изображения
@@ -45,6 +47,7 @@ async def handle_image(message, user_id, is_document, bot):
             return
 
         base64_image = convert_image_to_base64(cv_image)
+        
         invoice = get_QR(cv_image)
         logger.error(f"Извлекли номер из QR: {invoice}.")
         if invoice is None:
