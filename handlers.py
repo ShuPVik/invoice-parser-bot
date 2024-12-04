@@ -28,7 +28,7 @@ async def handle_photo(message: types.Message, bot: Bot):
     # Получаем файл
     file_info = bot.get_file(photo.file_id)
     # Получаем содержимое файла
-    file_content = bot.download_file(file_info.file_path)
+    file_content = await bot.download_file(file_info.file_path)
     # Генерируем имя файла (например, используем file_id)
     file_name = f"{photo.file_id}.jpg"
     send_file_to_flask(file_content, file_name, message)
@@ -52,7 +52,7 @@ async def handle_document(message: types.Message, bot: Bot):
             # Получаем файл
             file_info = bot.get_file(photo.file_id)
             # Получаем содержимое файла
-            file_content = bot.download_file(file_info.file_path)
+            file_content = await bot.download_file(file_info.file_path)
             # Генерируем имя файла (например, используем file_id)
             file_name = f"{photo.file_id}.jpg"
             send_file_to_flask(file_content, file_name, message)
@@ -62,7 +62,7 @@ async def handle_document(message: types.Message, bot: Bot):
             document = message.document
             if document.file_size <= 5 * 1024 * 1024: 
                 file_info = bot.get_file(document.file_id)
-                file_content = bot.download_file(file_info.file_path)
+                file_content = await bot.download_file(file_info.file_path)
                 file_name = f"{document.file_id}_{document.file_name}"
                 send_file_to_flask(file_content, file_name, message)
     except TelegramForbiddenError:
