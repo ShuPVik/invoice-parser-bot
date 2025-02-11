@@ -22,6 +22,11 @@ COPY requirements.txt ./
 # Обновляем pip
 RUN pip install --upgrade pip
 
+RUN apt-get update && apt-get install -y cmake g++
+RUN pip install --no-cache-dir numpy==2.2.2
+RUN pip install --no-cache-dir opencv-python-headless
+
+
 # Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
