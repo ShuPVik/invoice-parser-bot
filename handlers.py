@@ -1,11 +1,13 @@
 import logging
 import os
+from aiogram import Bot, Router, types, F
+from aiogram.types import ReplyKeyboardRemove
+from aiogram.exceptions import TelegramForbiddenError
 from dotenv import load_dotenv
-from aiogram import Bot, Router, types, F  # Используем F для фильтрации
-from state import images, user_states  # Глобальные переменные для состояния
+from state import images  # Глобальные переменные для состояния
 # Функции для обработки изображений
 from image_processing import handle_image, invoice_processing
-from aiogram.exceptions import TelegramForbiddenError
+
 from flask_requests import send_file_to_flask, send_text_to_flask
 
 logger = logging.getLogger(__name__)
@@ -16,17 +18,32 @@ load_dotenv()
 
 not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 
-# Обработчик текстовых сообщений
+run_chats = os.getenv("RUN_CHATS").split(",")
 
 
 @router.message(F.content_type == 'text')
-async def handle_text_message(message: types.Message, bot: Bot):
+async def handle_text_message(message: types.Message):
     logger.info(
         f"Обработка текстового сообщения от пользователя {message.chat.id}.")
     try:
         await send_text_to_flask(message)  # Отправка текста в Flask
     except Exception as e:
         logger.error(f"Ошибка при обработке текстового сообщения: {e}")
+
+
+@router.message(F.text == "Список рейсов на сегодня")
+async def handle_button1(message: types.Message):
+    await message.answer("Вы нажали 'Кнопка 1'!")
+
+
+@router.message(F.text == "Список рейсов на вчера")
+async def handle_button2(message: types.Message):
+    await message.answer("Вы нажали 'Кнопка 2'!")
+
+
+@router.message(F.text == "Скрыть клавиатуру")
+async def remove_keyboard(message: types.Message):
+    await message.answer("Клавиатура скрыта!", reply_markup=ReplyKeyboardRemove())
 
 
 @router.message(F.content_type == 'photo')
