@@ -17,14 +17,15 @@ dp = Dispatcher()
 dp.include_router(router)
 
 
-async def on_startup(dispatcher: Dispatcher):
+async def on_startup():
     """Функция запуска бота, устанавливает клавиатуру по умолчанию"""
     logger.info("Клаиватура установлена")
-    dispatcher["default_reply_markup"] = get_main_keyboard()
+    dp["default_reply_markup"] = get_main_keyboard()
 
 
 async def main():
     logger.info('Бот запущен')
+    await on_startup()
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
