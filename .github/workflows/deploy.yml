@@ -24,10 +24,6 @@ jobs:
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-
-      - name: Update code on server
-        run: ssh -t ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "cd apps/invoice-parser-bot && git pull origin master && docker-compose down && docker-compose up -d"
-
       - name: Deploy to Production
         if: github.ref_name == 'master'
         run: ssh -o StrictHostKeyChecking=no -t ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "cd apps/invoice-parser-bot && git pull origin master && docker compose down && docker compose up --build -d"
