@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 from handlers import router  # Импортируем router из handlers
-from utils import get_main_keyboard
+from utils import get_main_keyboard, KeyboardMiddleware
 from logger import logger
 # Загрузить переменные окружения
 load_dotenv()
@@ -22,10 +22,13 @@ async def on_startup():
     logger.info("Клаиватура установлена")
     dp["default_reply_markup"] = get_main_keyboard()
 
+# Регистрируем middleware
+dp.message.middleware(KeyboardMiddleware())
+
 
 async def main():
     logger.info('Бот запущен')
-    await on_startup()
+    # await on_startup()
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
