@@ -1,7 +1,11 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-import hashlib
-import cv2
 import base64
+import hashlib
+from typing import Callable, Awaitable, Dict, Any
+from aiogram.types import Message
+from aiogram import BaseMiddleware
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+import cv2
+
 from pyzbar.pyzbar import decode
 from PIL import Image
 
@@ -53,3 +57,15 @@ def get_main_keyboard():
         one_time_keyboard=False  # Оставляет клавиатуру на экране
     )
     return keyboard
+
+
+class KeyboardMiddleware(BaseMiddleware):
+    async def __call__(self, handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]], event: Message, data: Dict[str, Any]) -> Any:
+        """Добавляет клавиатуру после каждого текстового сообщения"""
+        result = await handler(event, data)
+
+        # Только для обычных текстовых сообщений
+        if event.text:
+            await event.answer("Выбери действие:", reply_markup=get_main_keyboard())
+
+        return result
