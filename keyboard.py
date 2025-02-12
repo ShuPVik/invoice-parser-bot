@@ -72,26 +72,40 @@ async def send_routes(user_id, routes, bot: Bot):
 
 
 # Обработчик callback-кнопок
+
+# Обработчик callback-кнопок
+
 @router.callback_query(lambda call: call.data.split(':')[0] in ["details", "late"])
-async def handle_inline_button(call: types.CallbackQuery, bot: Bot):
+async def handle_inline_button(call: types.CallbackQuery):
     user_id = call.message.chat.id
     action, number = call.data.split(':')
+    message_id = call.message.message_id  # Сохраняем ID сообщения
     logger.info(
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
+
     try:
         if action == "details":
-            await bot.send_message(user_id, text="Вы выбрали посмотреть детали")
-
-        if action == "details":
-            await bot.send_message(user_id, text=f"Вы уверены, что хотите оповестить о том, что рейс {number} задерживается?", reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
+            await call.message.edit_text(  # Обновляем сообщение
+                text=f"📋 Детали рейса {number}:\n\n🚍 Номер: {number}\n📍 Маршрут: Новосибирск-Красноярск\n👤 Водитель: Бочкарев Денис\n🚗 Авто: 195 Солерс",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="Да", callback_data=f"yes:{number}")],
-                    [InlineKeyboardButton(
-                        text="Нет", callback_data=f"no:{number}")]
+                        text="🔙 Назад", callback_data=f"back:{number}")]
+                ])
+            )
 
-                ]
-            ))
+        elif action == "late":
+            await call.message.edit_text(  # Обновляем сообщение, а не отправляем новое
+                text=f"⚠️ Вы уверены, что хотите сообщить о задержке рейса {number}?",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(
+                        text="✅ Да", callback_data=f"yes:{number}")],
+                    [InlineKeyboardButton(
+                        text="❌ Нет", callback_data=f"no:{number}")]
+                ])
+            )
+
+        await call.answer()  # Закрываем callback-запрос, чтобы кнопки не висели
+
     except Exception as e:
         logger.error(
             f"Ошибка при обработке callback-кнопки от пользователя {user_id}: {e}")
@@ -106,10 +120,12 @@ async def handle_yes_no_button(call: types.CallbackQuery, bot: Bot):
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
     try:
         if action == "yes":
-            await bot.send_message(user_id, text="Уведоление успешно отправлено")
+            await call.message.edit_text(text="Уведоление успешно отправлено")
 
         if action == "no":
             return
+
+        await call.answer()
     except Exception as e:
         logger.error(
             f"Ошибка при обработке callback-кнопки от пользователя {user_id}: {e}")
