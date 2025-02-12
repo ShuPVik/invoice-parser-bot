@@ -22,7 +22,7 @@ run_chats = os.getenv("RUN_CHATS").split(",")
 
 
 @router.message(F.content_type == 'text')
-async def handle_text_message(message: types.Message):
+async def handle_text_message(message: types.Message, bot: Bot):
     logger.info(
         f"Обработка текстового сообщения от пользователя {message.chat.id}.")
     try:
@@ -37,12 +37,12 @@ async def handle_button1(message: types.Message):
 
 
 @router.message(F.text == "Список рейсов на вчера")
-async def handle_button2(message: types.Message):
+async def handle_button2(message: types.Message, bot: Bot):
     await message.answer("Вы нажали 'Кнопка 2'!")
 
 
 @router.message(F.text == "Скрыть клавиатуру")
-async def remove_keyboard(message: types.Message):
+async def remove_keyboard(message: types.Message, bot: Bot):
     await message.answer("Клавиатура скрыта!", reply_markup=ReplyKeyboardRemove())
 
 

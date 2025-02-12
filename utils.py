@@ -66,6 +66,6 @@ class KeyboardMiddleware(BaseMiddleware):
 
         # Только для обычных текстовых сообщений
         if event.text:
-            await event.answer("Выбери действие:", reply_markup=get_main_keyboard())
+            await event.answer("", reply_markup=get_main_keyboard())
 
         return result
