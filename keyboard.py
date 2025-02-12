@@ -52,20 +52,24 @@ def format_route_info(data: dict) -> str:
     )
 
 
+# Загружаем текст маршрута по номеру рейса (можно из базы данных или словаря)
+routes_data = {
+}
+
+
 async def send_routes(user_id, routes, bot: Bot):
     for route in routes:
         text = format_route_info(route)
+        routes_data[f'{route['number']}'] = text
         await bot.send_message(
             user_id,
             text=text,
-            # Текст с описанием
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="Получить детали", callback_data=f"details:{route['number']}:{text}")],
+                        text="📋 Детали", callback_data=f"details:{route['number']}")],
                     [InlineKeyboardButton(
-                        text="Рейс задерживается", callback_data=f"late:{route['number']}:{text}")]
-
+                        text="⚠️ Сообщить о задержке", callback_data=f"late:{route['number']}")]
                 ]
             )
         )
@@ -78,34 +82,36 @@ async def send_routes(user_id, routes, bot: Bot):
 @router.callback_query(lambda call: call.data.split(':')[0] in ["details", "late"])
 async def handle_inline_button(call: types.CallbackQuery):
     user_id = call.message.chat.id
-    action, number, text = call.data.split(':')
+    action, number = call.data.split(':')  # Убрали text из callback_data
     logger.info(
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
 
+    text = routes_data.get(number, "Информация о рейсе не найдена.")
+
     try:
         if action == "details":
-            await call.message.edit_text(  # Обновляем сообщение
-                text=f"📋 Детали рейса {number}:\n\n🚍 Номер: {number}\n📍 Маршрут: Новосибирск-Красноярск\n👤 Водитель: Бочкарев Денис\n🚗 Авто: 195 Солерс",
+            await call.message.edit_text(
+                text=text,
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="🔙 Назад", callback_data=f"back:{number}:{text}")]
+                        text="🔙 Назад", callback_data=f"back:{number}")]
                 ])
             )
 
         elif action == "late":
-            await call.message.edit_text(  # Обновляем сообщение, а не отправляем новое
+            await call.message.edit_text(
                 text=f"⚠️ Вы уверены, что хотите сообщить о задержке рейса {number}?",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="✅ Да", callback_data=f"yes:{number}:{text}")],
+                        text="✅ Да", callback_data=f"yes:{number}")],
                     [InlineKeyboardButton(
-                        text="❌ Нет", callback_data=f"no:{number}:{text}")],
+                        text="❌ Нет", callback_data=f"no:{number}")],
                     [InlineKeyboardButton(
-                        text="🔙 Назад", callback_data=f"back:{number}:{text}")]
+                        text="🔙 Назад", callback_data=f"back:{number}")]
                 ])
             )
 
-        await call.answer()  # Закрываем callback-запрос, чтобы кнопки не висели
+        await call.answer()
 
     except Exception as e:
         logger.error(
@@ -116,25 +122,24 @@ async def handle_inline_button(call: types.CallbackQuery):
 @router.callback_query(lambda call: call.data.split(':')[0] in ["yes", "no", "back"])
 async def handle_yes_no_button(call: types.CallbackQuery):
     user_id = call.message.chat.id
-    action, number, text = call.data.split(':')
+    action, number = call.data.split(':')
     logger.info(
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
     try:
         if action == "yes":
             await call.message.edit_text(text="Уведоление успешно отправлено")
 
-        if action == "no":
+        elif action == "no":
             return
 
-        if action == "back":
-            # Возвращаем исходное сообщение
+        elif action == "back":
             await call.message.edit_text(
-                text=f"{text}",
+                text=f"🚌 Информация о рейсе {number}.{routes_data[number]}\nВыберите действие:",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="📋 Детали", callback_data=f"details:{number}:{text}")],
+                        text="📋 Детали", callback_data=f"details:{number}")],
                     [InlineKeyboardButton(
-                        text="⚠️ Сообщить о задержке", callback_data=f"late:{number}:{text}")]
+                        text="⚠️ Сообщить о задержке", callback_data=f"late:{number}")]
                 ])
             )
 
