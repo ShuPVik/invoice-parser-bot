@@ -3,7 +3,6 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 from handlers import router  # Импортируем router из handlers
-from keyboard import get_main_keyboard
 from logger import logger
 # Загрузить переменные окружения
 load_dotenv()
