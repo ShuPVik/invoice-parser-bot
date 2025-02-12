@@ -9,7 +9,7 @@ from state import images  # Глобальные переменные для с�
 # Функции для обработки изображений
 from image_processing import handle_image, invoice_processing
 from router_post import get_routes
-from keyboard import send_routes
+
 from flask_requests import send_file_to_flask, send_text_to_flask
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 
 @router.message(F.text == "Список рейсов на сегодня")
 async def handle_button1(message: types.Message):
+    from keyboard import send_routes
     user_id = message.chat.id
     logger.info(
         f"Пользователь {user_id} нажал 'Список рейсов на сегодня'")
@@ -39,6 +40,7 @@ async def handle_button1(message: types.Message):
 
 @router.message(F.text == "Список рейсов на вчера")
 async def handle_button2(message: types.Message):
+    from keyboard import send_routes
     user_id = message.chat.id
     logger.info(
         f"Пользователь {user_id} нажал 'Список рейсов на вчера'")
