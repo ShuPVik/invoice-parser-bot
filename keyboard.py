@@ -62,9 +62,9 @@ async def send_routes(user_id, routes, bot: Bot):
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="Получить детали", callback_data=f"details:{route['number']}")],
+                        text="Получить детали", callback_data=f"details:{route['number']}:{text}")],
                     [InlineKeyboardButton(
-                        text="Рейс задерживается", callback_data=f"late:{route['number']}")]
+                        text="Рейс задерживается", callback_data=f"late:{route['number']}:{text}")]
 
                 ]
             )
@@ -78,8 +78,7 @@ async def send_routes(user_id, routes, bot: Bot):
 @router.callback_query(lambda call: call.data.split(':')[0] in ["details", "late"])
 async def handle_inline_button(call: types.CallbackQuery):
     user_id = call.message.chat.id
-    action, number = call.data.split(':')
-    message_id = call.message.message_id  # Сохраняем ID сообщения
+    action, number, text = call.data.split(':')
     logger.info(
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
 
@@ -89,7 +88,7 @@ async def handle_inline_button(call: types.CallbackQuery):
                 text=f"📋 Детали рейса {number}:\n\n🚍 Номер: {number}\n📍 Маршрут: Новосибирск-Красноярск\n👤 Водитель: Бочкарев Денис\n🚗 Авто: 195 Солерс",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="🔙 Назад", callback_data=f"back:{number}")]
+                        text="🔙 Назад", callback_data=f"back:{number}:{text}")]
                 ])
             )
 
@@ -98,9 +97,11 @@ async def handle_inline_button(call: types.CallbackQuery):
                 text=f"⚠️ Вы уверены, что хотите сообщить о задержке рейса {number}?",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="✅ Да", callback_data=f"yes:{number}")],
+                        text="✅ Да", callback_data=f"yes:{number}:{text}")],
                     [InlineKeyboardButton(
-                        text="❌ Нет", callback_data=f"no:{number}")]
+                        text="❌ Нет", callback_data=f"no:{number}:{text}")],
+                    [InlineKeyboardButton(
+                        text="🔙 Назад", callback_data=f"back:{number}:{text}")]
                 ])
             )
 
@@ -112,10 +113,10 @@ async def handle_inline_button(call: types.CallbackQuery):
 
 
 # Обработчик callback-кнопок
-@router.callback_query(lambda call: call.data.split(':')[0] in ["yes", "no"])
-async def handle_yes_no_button(call: types.CallbackQuery, bot: Bot):
+@router.callback_query(lambda call: call.data.split(':')[0] in ["yes", "no", "back"])
+async def handle_yes_no_button(call: types.CallbackQuery):
     user_id = call.message.chat.id
-    action, number = call.data.split(':')
+    action, number, text = call.data.split(':')
     logger.info(
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
     try:
@@ -124,6 +125,18 @@ async def handle_yes_no_button(call: types.CallbackQuery, bot: Bot):
 
         if action == "no":
             return
+
+        if action == "back":
+            # Возвращаем исходное сообщение
+            await call.message.edit_text(
+                text=f"{text}",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(
+                        text="📋 Детали", callback_data=f"details:{number}:{text}")],
+                    [InlineKeyboardButton(
+                        text="⚠️ Сообщить о задержке", callback_data=f"late:{number}:{text}")]
+                ])
+            )
 
         await call.answer()
     except Exception as e:
