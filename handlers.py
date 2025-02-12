@@ -17,10 +17,15 @@ load_dotenv()
 
 not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 
+# Список кнопок
+BUTTONS = {"Список рейсов на сегодня", "Список рейсов на вчера"}
 
-@router.message(F.text.not_in(["Список рейсов на сегодня", "Список рейсов на вчера"]))
-# pylint disble=unused-argument
+
+@router.message()
 async def handle_text_message(message: types.Message, bot: Bot):
+    if message.text in BUTTONS:
+        return  # Позволяет другим хендлерам обработать кнопки
+
     logger.info(
         f"Обработка текстового сообщения от пользователя {message.chat.id}.")
     try:
