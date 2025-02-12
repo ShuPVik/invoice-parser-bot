@@ -23,12 +23,14 @@ async def get_routes(date):
                 "date": date
             }
             headers = {'Content-Type': 'application/json'}
+            logger.info("Отправа запроса на роуты")
             async with session.post(url_routes, data=json.dumps(payload), headers=headers) as response:
                 if response.status == 200:
                     text_response = await response.text()  # Получаем текст
+                    logger.info(f"Полученный ответ: {text_response}")
                     try:
                         # Пробуем преобразовать в JSON
-                        return text_response
+                        return json.dumps(text_response)
                     except json.JSONDecodeError as json_error:
                         logger.error(
                             f"Ошибка при декодировании JSON: {json_error}")

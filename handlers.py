@@ -43,7 +43,7 @@ async def handle_button2(message: types.Message):
     now = datetime.now(tz_novosibirsk)
     yesterday = (now - timedelta(days=1)).strftime("%d-%m-%Y")
     routes = await get_routes(yesterday)
-    await message.answer(routes)
+    await message.answer(str(routes))
 
 
 @router.message(F.content_type == 'text')
