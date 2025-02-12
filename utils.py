@@ -1,9 +1,5 @@
 import base64
 import hashlib
-from typing import Callable, Awaitable, Dict, Any
-from aiogram.types import Message
-from aiogram import BaseMiddleware
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 import cv2
 
 from pyzbar.pyzbar import decode
@@ -43,29 +39,3 @@ def hash_string(data: str, algorithm: str = 'sha256') -> str:
     hash_obj.update(data.encode('utf-8'))
     # Получаем хэш-сумму в виде шестнадцатеричной строки
     return hash_obj.hexdigest()
-
-
-# Создаём клавиатуру
-
-def get_main_keyboard():
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="Список рейсов на сегодня")],
-            [KeyboardButton(text="Список рейсов на вчера")]
-        ],
-        resize_keyboard=True,  # Уменьшает клавиатуру под размер экрана
-        one_time_keyboard=False  # Оставляет клавиатуру на экране
-    )
-    return keyboard
-
-
-class KeyboardMiddleware(BaseMiddleware):
-    async def __call__(self, handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]], event: Message, data: Dict[str, Any]) -> Any:
-        """Добавляет клавиатуру после каждого текстового сообщения"""
-        result = await handler(event, data)
-
-        # Только для обычных текстовых сообщений
-        if event.text:
-            await event.answer("", reply_markup=get_main_keyboard())
-
-        return result

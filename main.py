@@ -13,6 +13,7 @@ API_TOKEN = os.getenv('TG_API_TOKEN')
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
+
 # Регистрируем router с хендлерами
 dp.include_router(router)
 
