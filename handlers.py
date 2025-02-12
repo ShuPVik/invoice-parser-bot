@@ -18,7 +18,7 @@ load_dotenv()
 not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 
 
-@router.message(F.content_type == 'text')
+@router.message(F.text.not_in(["Список рейсов на сегодня", "Список рейсов на вчера"]))
 # pylint disble=unused-argument
 async def handle_text_message(message: types.Message, bot: Bot):
     logger.info(
