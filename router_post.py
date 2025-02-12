@@ -58,7 +58,7 @@ async def set_late(number):
             logger.info(f"Дата: {number}")
             headers = {'Content-Type': 'application/json'}
             logger.info("Отправа запроса на роуты")
-            async with session.post(url_routes, data=json.dumps(payload), headers=headers) as response:
+            async with session.post(url_late, data=json.dumps(payload), headers=headers) as response:
                 logger.info(
                     f"Статус: {response.status}")
                 if response.status == 200:

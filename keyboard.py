@@ -9,6 +9,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram import types, F
 from aiogram import Bot
 import pytz
+from router_post import set_late
 from handlers import router, tz_novosibirsk
 
 load_dotenv()
@@ -145,6 +146,7 @@ async def handle_yes_no_button(call: types.CallbackQuery):
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
     try:
         if action == "yes":
+            await set_late(number)
             await call.message.edit_text(text="Уведоление успешно отправлено")
 
         elif action == "back":
