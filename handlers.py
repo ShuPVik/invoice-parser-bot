@@ -21,7 +21,7 @@ not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 BUTTONS = {"Список рейсов на сегодня", "Список рейсов на вчера"}
 
 
-@router.message()
+@router.message(F.content_type == 'text')
 async def handle_text_message(message: types.Message, bot: Bot):
     if message.text in BUTTONS:
         return  # Позволяет другим хендлерам обработать кнопки

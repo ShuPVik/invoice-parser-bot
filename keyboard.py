@@ -9,8 +9,6 @@ from handlers import router
 load_dotenv()
 
 # Настройка логирования
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 run_chats = os.getenv("ROUTER_CHATS").split(",")
