@@ -125,8 +125,6 @@ async def handle_inline_button(call: types.CallbackQuery):
                     [InlineKeyboardButton(
                         text="✅ Да", callback_data=f"yes:{number}")],
                     [InlineKeyboardButton(
-                        text="❌ Нет", callback_data=f"no:{number}")],
-                    [InlineKeyboardButton(
                         text="🔙 Назад", callback_data=f"back:{number}")]
                 ])
             )
@@ -148,9 +146,6 @@ async def handle_yes_no_button(call: types.CallbackQuery):
     try:
         if action == "yes":
             await call.message.edit_text(text="Уведоление успешно отправлено")
-
-        elif action == "no":
-            await call.answer()
 
         elif action == "back":
             await call.message.edit_text(
