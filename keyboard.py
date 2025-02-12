@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
@@ -20,20 +21,6 @@ run_chats = os.getenv("ROUTER_CHATS").split(",")
 async def show_keyboard(message: types.Message):
     logger.info(f"Пользователь {message.from_user.id} вызвал клавиатуру")
     await message.answer("Выберите опцию:", reply_markup=get_main_keyboard())
-
-
-@router.message(F.text == "Список рейсов на сегодня")
-async def handle_button1(message: types.Message, bot: Bot):
-    logger.info(
-        f"Пользователь {message.from_user.id} нажал 'Список рейсов на сегодня'")
-    await message.answer("Вы нажали 'Список рейсов на сегодня'!")
-
-
-@router.message(F.text == "Список рейсов на вчера")
-async def handle_button2(message: types.Message, bot: Bot):
-    logger.info(
-        f"Пользователь {message.from_user.id} нажал 'Список рейсов на вчера'")
-    await message.answer("Вы нажали 'Список рейсов на вчера'!")
 
 
 @router.message(F.text == "/remove_keyboard")

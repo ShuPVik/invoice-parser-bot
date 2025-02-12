@@ -17,15 +17,24 @@ load_dotenv()
 
 not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 
-# Список кнопок
-BUTTONS = {"Список рейсов на сегодня", "Список рейсов на вчера"}
+
+@router.message(F.text == "Список рейсов на сегодня")
+async def handle_button1(message: types.Message, bot: Bot):
+    logger.info(
+        f"Пользователь {message.from_user.id} нажал 'Список рейсов на сегодня'")
+    # date = datetime.now()
+    await message.answer("Вы нажали 'Список рейсов на сегодня'!")
+
+
+@router.message(F.text == "Список рейсов на вчера")
+async def handle_button2(message: types.Message, bot: Bot):
+    logger.info(
+        f"Пользователь {message.from_user.id} нажал 'Список рейсов на вчера'")
+    await message.answer("Вы нажали 'Список рейсов на вчера'!")
 
 
 @router.message(F.content_type == 'text')
 async def handle_text_message(message: types.Message, bot: Bot):
-    if message.text in BUTTONS:
-        return  # Позволяет другим хендлерам обработать кнопки
-
     logger.info(
         f"Обработка текстового сообщения от пользователя {message.chat.id}.")
     try:
