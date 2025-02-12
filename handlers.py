@@ -25,7 +25,7 @@ not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 
 
 @router.message(F.text == "Список рейсов на сегодня")
-async def handle_button1(message: types.Message):
+async def handle_button1(message: types.Message, bot: Bot):
     from keyboard import send_routes
     user_id = message.chat.id
     logger.info(
@@ -35,11 +35,11 @@ async def handle_button1(message: types.Message):
     # Получаем дату в формате "ДД-ММ-ГГГГ"
     today = now.strftime("%Y-%m-%d")
     routes = await get_routes(today)
-    await send_routes(routes)
+    await send_routes(user_id, routes, bot)
 
 
 @router.message(F.text == "Список рейсов на вчера")
-async def handle_button2(message: types.Message):
+async def handle_button2(message: types.Message, bot: Bot):
     from keyboard import send_routes
     user_id = message.chat.id
     logger.info(
@@ -48,7 +48,7 @@ async def handle_button2(message: types.Message):
     now = datetime.now(tz_novosibirsk)
     yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     routes = await get_routes(yesterday)
-    await send_routes(routes)
+    await send_routes(user_id, routes, bot)
 
 
 @router.message(F.content_type == 'text')
