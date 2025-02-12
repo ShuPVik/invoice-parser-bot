@@ -8,7 +8,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram import types, F
 from aiogram import Bot
-from handlers import router
+import pytz
+from handlers import router, tz_novosibirsk
 
 load_dotenv()
 
@@ -61,13 +62,17 @@ routes_data = {
 
 async def clear_routes_data():
     while True:
-        now = datetime.datetime.now()
-        next_run = now.replace(hour=0, minute=0, second=0,
-                               microsecond=0) + datetime.timedelta(days=1)
-        wait_time = (next_run - now).total_seconds()
+        now = datetime.datetime.now(pytz.utc).astimezone(
+            tz_novosibirsk)  # Текущее время в Новосибирске
+        # Следующая очистка в 07:00
+        next_run = now.replace(hour=7, minute=0, second=0, microsecond=0)
+        if now >= next_run:  # Если уже после 07:00, назначаем на следующий день
+            next_run += datetime.timedelta(days=1)
+
+        wait_time = (next_run - now).total_seconds()  # Время до очистки
 
         logger.info(
-            "⏳ Ожидание до следующей очистки данных: %s секунд", wait_time)
+            f"⏳ Ожидание до следующей очистки данных в 07:00 Новосибирска ({next_run}). Осталось {wait_time} секунд.")
         await asyncio.sleep(wait_time)
 
         routes_data.clear()
@@ -91,8 +96,6 @@ async def send_routes(user_id, routes, bot: Bot):
             )
         )
 
-
-# Обработчик callback-кнопок
 
 # Обработчик callback-кнопок
 
