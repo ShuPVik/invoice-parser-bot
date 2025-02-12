@@ -83,7 +83,33 @@ async def handle_inline_button(call: types.CallbackQuery, bot: Bot):
             await bot.send_message(user_id, text="Вы выбрали посмотреть детали")
 
         if action == "details":
-            await bot.send_message(user_id, text="Вы выбрали, что рейс задеживается")
+            await bot.send_message(user_id, text=f"Вы уверены, что хотите оповестить о том, что рейс {number} задерживается?", reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [InlineKeyboardButton(
+                        text="Да", callback_data=f"yes:{number}")],
+                    [InlineKeyboardButton(
+                        text="Нет", callback_data=f"no:{number}")]
+
+                ]
+            ))
+    except Exception as e:
+        logger.error(
+            f"Ошибка при обработке callback-кнопки от пользователя {user_id}: {e}")
+
+
+# Обработчик callback-кнопок
+@router.callback_query(lambda call: call.data.split(':')[0] in ["yes", "no"])
+async def handle_yes_no_button(call: types.CallbackQuery, bot: Bot):
+    user_id = call.message.chat.id
+    action, number = call.data.split(':')
+    logger.info(
+        f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
+    try:
+        if action == "yes":
+            await bot.send_message(user_id, text="Уведоление успешно отправлено")
+
+        if action == "no":
+            return
     except Exception as e:
         logger.error(
             f"Ошибка при обработке callback-кнопки от пользователя {user_id}: {e}")
