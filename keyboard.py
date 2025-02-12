@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from aiogram import Bot, types, F
+from aiogram import types, F
 from handlers import router
 
 load_dotenv()

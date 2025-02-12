@@ -31,7 +31,7 @@ async def handle_button1(message: types.Message):
     now = datetime.now(tz_novosibirsk)
     # Получаем дату в формате "ДД-ММ-ГГГГ"
     today = now.strftime("%d-%m-%Y")
-    routes = get_routes(today)
+    routes = await get_routes(today)
     await message.answer(routes)
 
 
@@ -42,7 +42,7 @@ async def handle_button2(message: types.Message):
     # Получаем вчерашнюю дату
     now = datetime.now(tz_novosibirsk)
     yesterday = (now - timedelta(days=1)).strftime("%d-%m-%Y")
-    routes = get_routes(yesterday)
+    routes = await get_routes(yesterday)
     await message.answer(routes)
 
 
