@@ -28,7 +28,7 @@ async def get_routes(date):
                     text_response = await response.text()  # Получаем текст
                     try:
                         # Пробуем преобразовать в JSON
-                        return json.loads(text_response)
+                        return text_response
                     except json.JSONDecodeError as json_error:
                         logger.error(
                             f"Ошибка при декодировании JSON: {json_error}")
