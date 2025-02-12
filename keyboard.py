@@ -130,7 +130,7 @@ async def handle_yes_no_button(call: types.CallbackQuery):
             await call.message.edit_text(text="Уведоление успешно отправлено")
 
         elif action == "no":
-            return
+            await call.answer()
 
         elif action == "back":
             await call.message.edit_text(
