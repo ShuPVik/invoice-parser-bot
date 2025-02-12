@@ -1,5 +1,7 @@
 import logging
 import os
+import asyncio
+import datetime
 from dotenv import load_dotenv
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -55,6 +57,21 @@ def format_route_info(data: dict) -> str:
 # Загружаем текст маршрута по номеру рейса (можно из базы данных или словаря)
 routes_data = {
 }
+
+
+async def clear_routes_data():
+    while True:
+        now = datetime.datetime.now()
+        next_run = now.replace(hour=0, minute=0, second=0,
+                               microsecond=0) + datetime.timedelta(days=1)
+        wait_time = (next_run - now).total_seconds()
+
+        logger.info(
+            "⏳ Ожидание до следующей очистки данных: %s секунд", wait_time)
+        await asyncio.sleep(wait_time)
+
+        routes_data.clear()
+        logger.info("🚮 Данные маршрутов очищены!")
 
 
 async def send_routes(user_id, routes, bot: Bot):
