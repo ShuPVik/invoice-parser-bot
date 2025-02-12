@@ -19,7 +19,7 @@ async def get_routes(date):
     try:
         async with aiohttp.ClientSession() as session:
             payload = {
-                # "token": token,
+                "token": token,
                 "date": date
             }
             logger.info(f"Дата: {date}")
@@ -40,7 +40,7 @@ async def get_routes(date):
                         return {'error': f"Неправильный формат ответа: {text_response}"}
                 else:
 
-                    text_response = await response.text()  # Получаем текст
+                    text_response = await response.content()  # Получаем текст
                     logger.info(f"Полученный ответ: {text_response}")
                     return {'error': f"HTTP Error: {response.status}"}
     except Exception as e:
