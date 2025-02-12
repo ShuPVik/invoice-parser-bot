@@ -19,9 +19,10 @@ async def get_routes(date):
     try:
         async with aiohttp.ClientSession() as session:
             payload = {
-                "token": token,
+                # "token": token,
                 "date": date
             }
+            logger.info(f"Дата: {date}")
             headers = {'Content-Type': 'application/json'}
             logger.info("Отправа запроса на роуты")
             async with session.post(url_routes, data=json.dumps(payload), headers=headers) as response:
