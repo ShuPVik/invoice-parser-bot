@@ -13,6 +13,13 @@ load_dotenv()
 
 run_chats = os.getenv("RUN_CHATS").split(",")
 
+# ✅ Отображаем клавиатуру при команде /start
+
+
+@router.message(F.text == "/keyboard")
+async def show_keyboard(message: types.Message):
+    await message.answer("", reply_markup=get_main_keyboard())
+
 
 @router.message(F.text == "Список рейсов на сегодня")
 async def handle_button1(message: types.Message, bot: Bot):
@@ -24,7 +31,7 @@ async def handle_button2(message: types.Message, bot: Bot):
     await message.answer("Вы нажали 'Кнопка 2'!")
 
 
-@router.message(F.text == "Скрыть клавиатуру")
+@router.message(F.text == "/remove_keyboard")
 async def remove_keyboard(message: types.Message, bot: Bot):
     await message.answer("Клавиатура скрыта!", reply_markup=ReplyKeyboardRemove())
 
