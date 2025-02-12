@@ -72,7 +72,7 @@ async def send_routes(user_id, routes, bot: Bot):
 
 
 # Обработчик callback-кнопок
-@router.callback_query(lambda call: call.data.split(':')[0] in ["details",  "late"])
+@router.callback_query(lambda call: call.data.split(':')[0] in ["details", "late"])
 async def handle_inline_button(call: types.CallbackQuery, bot: Bot):
     user_id = call.message.chat.id
     action, number = call.data.split(':')
@@ -80,10 +80,10 @@ async def handle_inline_button(call: types.CallbackQuery, bot: Bot):
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
     try:
         if action == "details":
-            bot.send_message(user_id, text="Вы выбрали посмотреть детали")
+            await bot.send_message(user_id, text="Вы выбрали посмотреть детали")
 
         if action == "details":
-            bot.send_message(user_id, text="Вы выбрали, что рейс задеживается")
+            await bot.send_message(user_id, text="Вы выбрали, что рейс задеживается")
     except Exception as e:
         logger.error(
             f"Ошибка при обработке callback-кнопки от пользователя {user_id}: {e}")
