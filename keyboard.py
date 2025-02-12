@@ -1,6 +1,5 @@
 import logging
 import os
-from datetime import datetime
 from dotenv import load_dotenv
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
@@ -24,7 +23,7 @@ async def show_keyboard(message: types.Message):
 
 
 @router.message(F.text == "/remove_keyboard")
-async def remove_keyboard(message: types.Message, bot: Bot):
+async def remove_keyboard(message: types.Message):
     logger.info(f"Пользователь {message.from_user.id} скрыл клавиатуру")
     await message.answer("Клавиатура скрыта!", reply_markup=ReplyKeyboardRemove())
 

@@ -1,17 +1,22 @@
 import logging
 import os
+from datetime import datetime, timedelta
+import pytz
 from aiogram import Bot, Router, types, F
 from aiogram.exceptions import TelegramForbiddenError
 from dotenv import load_dotenv
 from state import images  # Глобальные переменные для состояния
 # Функции для обработки изображений
 from image_processing import handle_image, invoice_processing
-
+from router_post import get_routes
 from flask_requests import send_file_to_flask, send_text_to_flask
 
 logger = logging.getLogger(__name__)
 # Создаем роутер для регистрации хендлеров
 router = Router()
+
+# Указываем часовой пояс Новосибирска
+tz_novosibirsk = pytz.timezone('Asia/Novosibirsk')
 
 load_dotenv()
 
@@ -19,22 +24,30 @@ not_allowed_chats = os.getenv("NOT_ALLOWED_CHATS").split(",")
 
 
 @router.message(F.text == "Список рейсов на сегодня")
-async def handle_button1(message: types.Message, bot: Bot):
+async def handle_button1(message: types.Message):
     logger.info(
         f"Пользователь {message.from_user.id} нажал 'Список рейсов на сегодня'")
-    # date = datetime.now()
-    await message.answer("Вы нажали 'Список рейсов на сегодня'!")
+    # Получаем текущую дату и время в Новосибирске
+    now = datetime.now(tz_novosibirsk)
+    # Получаем дату в формате "ДД-ММ-ГГГГ"
+    today = now.strftime("%d-%m-%Y")
+    routes = get_routes(today)
+    await message.answer(routes)
 
 
 @router.message(F.text == "Список рейсов на вчера")
-async def handle_button2(message: types.Message, bot: Bot):
+async def handle_button2(message: types.Message):
     logger.info(
         f"Пользователь {message.from_user.id} нажал 'Список рейсов на вчера'")
-    await message.answer("Вы нажали 'Список рейсов на вчера'!")
+    # Получаем вчерашнюю дату
+    now = datetime.now(tz_novosibirsk)
+    yesterday = (now - timedelta(days=1)).strftime("%d-%m-%Y")
+    routes = get_routes(yesterday)
+    await message.answer(routes)
 
 
 @router.message(F.content_type == 'text')
-async def handle_text_message(message: types.Message, bot: Bot):
+async def handle_text_message(message: types.Message):
     logger.info(
         f"Обработка текстового сообщения от пользователя {message.chat.id}.")
     try:
