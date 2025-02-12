@@ -1,16 +1,13 @@
 import logging
 import os
-import asyncio
-import datetime
 from dotenv import load_dotenv
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram import types, F
 from aiogram import Bot
-import pytz
 from router_post import set_late
-from handlers import router, tz_novosibirsk
+from handlers import router
 
 load_dotenv()
 
@@ -56,34 +53,9 @@ def format_route_info(data: dict) -> str:
     )
 
 
-# Загружаем текст маршрута по номеру рейса (можно из базы данных или словаря)
-routes_data = {
-}
-
-
-async def clear_routes_data():
-    while True:
-        now = datetime.datetime.now(pytz.utc).astimezone(
-            tz_novosibirsk)  # Текущее время в Новосибирске
-        # Следующая очистка в 07:00
-        next_run = now.replace(hour=7, minute=0, second=0, microsecond=0)
-        if now >= next_run:  # Если уже после 07:00, назначаем на следующий день
-            next_run += datetime.timedelta(days=1)
-
-        wait_time = (next_run - now).total_seconds()  # Время до очистки
-
-        logger.info(
-            f"⏳ Ожидание до следующей очистки данных в 07:00 Новосибирска ({next_run}). Осталось {wait_time} секунд.")
-        await asyncio.sleep(wait_time)
-
-        routes_data.clear()
-        logger.info("🚮 Данные маршрутов очищены!")
-
-
 async def send_routes(user_id, routes, bot: Bot):
     for route in routes:
         text = format_route_info(route)
-        routes_data[f'{route['number']}'] = text
         await bot.send_message(
             user_id,
             text=text,
@@ -107,15 +79,13 @@ async def handle_inline_button(call: types.CallbackQuery):
     logger.info(
         f"Получен запрос от пользователя {user_id} для номера {number} с действием {action}.")
 
-    text = routes_data.get(number, "Информация о рейсе не найдена.")
-
     try:
         if action == "details":
             await call.message.edit_text(
-                text=text,
+                text=f"Детали номера: {number}",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(
-                        text="🔙 Назад", callback_data=f"back:{number}")]
+                        text="⚠️ Сообщить о задержке", callback_data=f"late:{number}")]
                 ])
             )
 
@@ -126,7 +96,7 @@ async def handle_inline_button(call: types.CallbackQuery):
                     [InlineKeyboardButton(
                         text="✅ Да", callback_data=f"yes:{number}")],
                     [InlineKeyboardButton(
-                        text="🔙 Назад", callback_data=f"back:{number}")]
+                        text="❌ Нет", callback_data=f"no:{number}")],
                 ])
             )
 
@@ -147,18 +117,10 @@ async def handle_yes_no_button(call: types.CallbackQuery):
     try:
         if action == "yes":
             await set_late(number)
-            await call.message.edit_text(text="Уведоление успешно отправлено")
+            await call.message.edit_text(text=f"Уведомление успешно отправлено для номера рейса {number}")
 
-        elif action == "back":
-            await call.message.edit_text(
-                text=f"🚌 Информация о рейсе {number}.{routes_data[number]}\nВыберите действие:",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(
-                        text="📋 Детали", callback_data=f"details:{number}")],
-                    [InlineKeyboardButton(
-                        text="⚠️ Сообщить о задержке", callback_data=f"late:{number}")]
-                ])
-            )
+        elif action == "no":
+            await call.message.edit_text(text=f"Уведоление не отправлено для рейса: {number}")
 
         await call.answer()
     except Exception as e:
