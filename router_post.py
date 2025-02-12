@@ -25,6 +25,8 @@ async def get_routes(date):
             headers = {'Content-Type': 'application/json'}
             logger.info("Отправа запроса на роуты")
             async with session.post(url_routes, data=json.dumps(payload), headers=headers) as response:
+                logger.info(
+                    f"Статус: {response.status}, ответ: {response.text()}")
                 if response.status == 200:
                     text_response = await response.text()  # Получаем текст
                     logger.info(f"Полученный ответ: {text_response}")
