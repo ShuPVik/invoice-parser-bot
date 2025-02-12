@@ -32,7 +32,7 @@ async def handle_button1(message: types.Message):
     # Получаем дату в формате "ДД-ММ-ГГГГ"
     today = now.strftime("%d-%m-%Y")
     routes = await get_routes(today)
-    await message.answer(routes)
+    await message.answer(str(routes))
 
 
 @router.message(F.text == "Список рейсов на вчера")
