@@ -94,35 +94,23 @@ async def get_number_using_openai(cv_image):
                 cv_image = rotate_image_90_degrees(cv_image, clockwise=False)
                 is_readable = check_text_orientation(cv_image)
                 if is_readable:
-                    logger.info(
-                        f"Текст стал читаемым после поворота (попытка {attempt})."
-                    )
+                    logger.info(f"Текст стал читаемым после поворота (попытка {attempt}).")
                     break
             else:
-                logger.warning(
-                    "Не удалось сделать текст читаемым после четырех поворотов."
-                )
+                logger.warning("Не удалось сделать текст читаемым после четырех поворотов.")
 
         base64_image = convert_image_to_base64(cv_image)
         logger.debug("Изображение перекодировано в base64 для отправки в OpenAI.")
 
         invoice_data = await get_invoice_from_image(base64_image)
-        assert isinstance(invoice_data, str), (
-            "Ожидалась строка от get_invoice_from_image"
-        )
+        assert isinstance(invoice_data, str), "Ожидалась строка от get_invoice_from_image"
 
-        logger.debug(f"Сырой ответ от OpenAI: {repr(invoice_data)}")
+        # logger.debug(f"Сырой ответ от OpenAI: {repr(invoice_data)}")
 
-        invoice_data = re.sub(
-            r"^```(?:json)?|```$", "", invoice_data.strip(), flags=re.IGNORECASE
-        ).strip()
+        invoice_data = re.sub(r"^```(?:json)?|```$", "", invoice_data.strip(), flags=re.IGNORECASE).strip()
 
         result = json.loads(invoice_data)
-        if (
-            not isinstance(result, dict)
-            or "number" not in result
-            or "error" not in result
-        ):
+        if not isinstance(result, dict) or "number" not in result or "error" not in result:
             raise ValueError(f"Некорректный формат ответа: {result}")
 
         return result
